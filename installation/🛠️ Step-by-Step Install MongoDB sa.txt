@@ -1,0 +1,62 @@
+🛠️ Step-by-Step: Install MongoDB sa NestJS (with Mongoose)
+✅ Step 1: Install Mongoose & NestJS Mongoose module
+Sa terminal, punta ka sa root folder ng NestJS project mo, tapos i-run mo:
+
+terminal
+npm install @nestjs/mongoose mongoose
+
+
+✅ Step 2: Ilagay ang MongoDB URI sa .env file
+Gumawa (o edit) ng .env file sa root folder ng project mo, tapos ilagay ang connection string:
+
+.env insert
+MONGODB_URI=mongodb+srv://tcnmt06:82YhjGEBPP8kt3sG@cluster0.kokvzfg.mongodb.net/mydatabase?retryWrites=true&w=majority
+
+create database
+
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Document } from 'mongoose';
+
+export type UserDocument = User & Document;
+
+@Schema()
+export class User {
+  @Prop()
+  name: string;
+
+  @Prop()
+  email: string;
+}
+
+export const UserSchema = SchemaFactory.createForClass(User);
+
+user module
+
+import { Module } from '@nestjs/common';
+import { MongooseModule } from '@nestjs/mongoose';
+import { User, UserSchema } from './user.schema';
+
+@Module({
+  imports: [
+    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
+  ],
+})
+export class UserModule {}
+
+App modue
+import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { MongooseModule } from '@nestjs/mongoose';
+
+const mongoUri = process.env.MONGODB_URI;
+if (!mongoUri) {
+  throw new Error('MONGODB_URI environment variable is not set!');
+}
+
+@Module({
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
+    MongooseModule.forRoot(mongoUri),
+  ],
+})
+export class AppModule {}
